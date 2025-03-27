@@ -4,126 +4,126 @@ import (
 	"book-crud-api/models"
 	"book-crud-api/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
+	"os"
+	"path/filepath"
 )
 
-const filename = "data/book.json" // JSON file location
-
-// HandleBooks - Handles CRUD operations on books
+// HandleBooks handles CRUD operations on books
 func HandleBooks(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, "/books/")
-	if path == "" { // If path is empty, handle `/books` CRUD operations
-		switch r.Method {
-		case "GET":
-			getAllBooks(w)
-		case "POST":
-			createBook(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	} else { // Handle `/books/{id}` for GET, PUT, and DELETE
-		bookID := path
-		switch r.Method {
-		case "GET":
-			getBookByID(w, bookID)
-		case "PUT":
-			updateBookByID(w, r, bookID)
-		case "DELETE":
-			deleteBookByID(w, bookID)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	}
-}
 
-// Helper functions for CRUD operations
+	// getting the file path dynamically
+	cwd, _ := os.Getwd()
+	var filename = filepath.Join(cwd, "data", "book.json")
 
-// getAllBooks - Handle GET /books
-func getAllBooks(w http.ResponseWriter) {
-	books, err := utils.ReadBooks(filename)
-	if err != nil {
-		http.Error(w, "Unable to read books", http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(books)
-}
-
-// createBook - Handle POST /books
-func createBook(w http.ResponseWriter, r *http.Request) {
-	var newBook models.Book
-	json.NewDecoder(r.Body).Decode(&newBook)
-
-	books, err := utils.ReadBooks(filename)
-	if err != nil {
-		http.Error(w, "Unable to read books", http.StatusInternalServerError)
-		return
-	}
-
-	books = append(books, newBook)
-	utils.WriteBooks(filename, books)
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newBook)
-}
-
-// getBookByID - Handle GET /books/{id}
-func getBookByID(w http.ResponseWriter, bookID string) {
-	books, err := utils.ReadBooks(filename)
-	if err != nil {
-		http.Error(w, "Unable to read books", http.StatusInternalServerError)
-		return
-	}
-
-	for _, book := range books {
-		if book.BookID == bookID {
-			json.NewEncoder(w).Encode(book)
+	switch r.Method {
+	case "GET":
+		books, err := utils.ReadBooks(filename)
+		if err != nil {
+			http.Error(w, "Unable to read books", http.StatusInternalServerError)
 			return
 		}
-	}
-	http.Error(w, "Book not found", http.StatusNotFound)
-}
-
-// updateBookByID - Handle PUT /books/{id}
-func updateBookByID(w http.ResponseWriter, r *http.Request, bookID string) {
-	books, err := utils.ReadBooks(filename)
-	if err != nil {
-		http.Error(w, "Unable to read books", http.StatusInternalServerError)
-		return
-	}
-
-	var updatedBook models.Book
-	json.NewDecoder(r.Body).Decode(&updatedBook)
-
-	for i, book := range books {
-		if book.BookID == bookID {
-			books[i] = updatedBook // Update the book details in the slice
-			utils.WriteBooks(filename, books)
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(updatedBook)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(books)
+	case "POST":
+		var book models.Book
+		err := json.NewDecoder(r.Body).Decode(&book)
+		if err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-	}
-	http.Error(w, "Book not found", http.StatusNotFound)
-}
 
-// deleteBookByID - Handle DELETE /books/{id}
-func deleteBookByID(w http.ResponseWriter, bookID string) {
-	books, err := utils.ReadBooks(filename)
-	if err != nil {
-		http.Error(w, "Unable to read books", http.StatusInternalServerError)
-		return
-	}
+		books, _ := utils.ReadBooks(filename) // Read current books
+		books = append(books, book)           // Add the new book
+		utils.WriteBooks(filename, books)     // Write updated list to file
 
-	for i, book := range books {
-		if book.BookID == bookID {
-			books = append(books[:i], books[i+1:]...) // Remove book from slice
-			utils.WriteBooks(filename, books)
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, "Book deleted successfully")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(book) // Respond with the created book
+	case "PUT":
+		var updatedBook models.Book
+		err := json.NewDecoder(r.Body).Decode(&updatedBook)
+		if err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
+
+		// Extract book ID from URL path (assuming book ID is part of the URL)
+		bookID := r.URL.Query().Get("id")
+		if bookID == "" {
+			http.Error(w, "Book ID is required", http.StatusBadRequest)
+			return
+		}
+
+		books, err := utils.ReadBooks(filename)
+		if err != nil {
+			http.Error(w, "Unable to read books", http.StatusInternalServerError)
+			return
+		}
+
+		// Find and update the book with the matching ID
+		var bookFound bool
+		for i, book := range books {
+			if book.BookID == bookID {
+				books[i] = updatedBook
+				bookFound = true
+				break
+			}
+		}
+
+		if !bookFound {
+			http.Error(w, "Book not found", http.StatusNotFound)
+			return
+		}
+
+		// Write the updated book list back to the file
+		err = utils.WriteBooks(filename, books)
+		if err != nil {
+			http.Error(w, "Unable to write books", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(updatedBook)
+
+	case "DELETE":
+		// Extract book ID from URL path (assuming book ID is part of the URL)
+		bookID := r.URL.Query().Get("id")
+		if bookID == "" {
+			http.Error(w, "Book ID is required", http.StatusBadRequest)
+			return
+		}
+
+		books, err := utils.ReadBooks(filename)
+		if err != nil {
+			http.Error(w, "Unable to read books", http.StatusInternalServerError)
+			return
+		}
+
+		// Find and delete the book with the matching ID
+		var bookFound bool
+		var updatedBooks []models.Book
+		for _, book := range books {
+			if book.BookID != bookID {
+				updatedBooks = append(updatedBooks, book)
+			} else {
+				bookFound = true
+			}
+		}
+
+		if !bookFound {
+			http.Error(w, "Book not found", http.StatusNotFound)
+			return
+		}
+
+		// Write the updated book list back to the file
+		err = utils.WriteBooks(filename, updatedBooks)
+		if err != nil {
+			http.Error(w, "Unable to write books", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-	http.Error(w, "Book not found", http.StatusNotFound)
 }
