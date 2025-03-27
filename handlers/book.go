@@ -18,13 +18,30 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
+		bookID := r.URL.Query().Get("id") // Check if `id` is passed in the query parameters
+
 		books, err := utils.ReadBooks(filename)
 		if err != nil {
 			http.Error(w, "Unable to read books", http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(books)
+
+		if bookID != "" {
+			// If `id` is provided, find the specific book
+			for _, book := range books {
+				if book.BookID == bookID {
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(book) // Return the specific book
+					return
+				}
+			}
+			// If book is not found, return 404
+			http.Error(w, "Book not found", http.StatusNotFound)
+		} else {
+			// If `id` is not provided, return the entire list
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(books)
+		}
 	case "POST":
 		var book models.Book
 		err := json.NewDecoder(r.Body).Decode(&book)
@@ -46,19 +63,19 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-	
+
 		bookID := r.URL.Query().Get("id")
 		if bookID == "" {
 			http.Error(w, "Book ID is required", http.StatusBadRequest)
 			return
 		}
-	
+
 		books, err := utils.ReadBooks(filename)
 		if err != nil {
 			http.Error(w, "Unable to read books", http.StatusInternalServerError)
 			return
 		}
-	
+
 		var bookFound bool
 		for i, book := range books {
 			if book.BookID == bookID {
@@ -97,22 +114,21 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-	
+
 		if !bookFound {
 			http.Error(w, "Book not found", http.StatusNotFound)
 			return
 		}
-	
+
 		// Write the updated book list back to the file
 		err = utils.WriteBooks(filename, books)
 		if err != nil {
 			http.Error(w, "Unable to write books", http.StatusInternalServerError)
 			return
 		}
-	
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(books) // Respond with the updated book list
-	
 
 	case "DELETE":
 		// Extract book ID from URL path (assuming book ID is part of the URL)
