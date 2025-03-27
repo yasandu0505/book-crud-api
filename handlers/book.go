@@ -46,44 +46,73 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-
-		// Extract book ID from URL path (assuming book ID is part of the URL)
+	
 		bookID := r.URL.Query().Get("id")
 		if bookID == "" {
 			http.Error(w, "Book ID is required", http.StatusBadRequest)
 			return
 		}
-
+	
 		books, err := utils.ReadBooks(filename)
 		if err != nil {
 			http.Error(w, "Unable to read books", http.StatusInternalServerError)
 			return
 		}
-
-		// Find and update the book with the matching ID
+	
 		var bookFound bool
 		for i, book := range books {
 			if book.BookID == bookID {
-				books[i] = updatedBook
+				// Merge the updatedBook fields dynamically with the existing book
+				if updatedBook.Title != "" {
+					books[i].Title = updatedBook.Title
+				}
+				if updatedBook.AuthorID != "" {
+					books[i].AuthorID = updatedBook.AuthorID
+				}
+				if updatedBook.PublisherID != "" {
+					books[i].PublisherID = updatedBook.PublisherID
+				}
+				if updatedBook.PublicationDate != "" {
+					books[i].PublicationDate = updatedBook.PublicationDate
+				}
+				if updatedBook.ISBN != "" {
+					books[i].ISBN = updatedBook.ISBN
+				}
+				if updatedBook.Pages != 0 {
+					books[i].Pages = updatedBook.Pages
+				}
+				if updatedBook.Genre != "" {
+					books[i].Genre = updatedBook.Genre
+				}
+				if updatedBook.Description != "" {
+					books[i].Description = updatedBook.Description
+				}
+				if updatedBook.Price != 0 {
+					books[i].Price = updatedBook.Price
+				}
+				if updatedBook.Quantity != 0 {
+					books[i].Quantity = updatedBook.Quantity
+				}
 				bookFound = true
 				break
 			}
 		}
-
+	
 		if !bookFound {
 			http.Error(w, "Book not found", http.StatusNotFound)
 			return
 		}
-
+	
 		// Write the updated book list back to the file
 		err = utils.WriteBooks(filename, books)
 		if err != nil {
 			http.Error(w, "Unable to write books", http.StatusInternalServerError)
 			return
 		}
-
+	
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(updatedBook)
+		json.NewEncoder(w).Encode(books) // Respond with the updated book list
+	
 
 	case "DELETE":
 		// Extract book ID from URL path (assuming book ID is part of the URL)
