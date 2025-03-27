@@ -16,8 +16,8 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
     switch r.Method {
     case "GET":
         books := []Book{
-            {Title: "The Great Gatsby"},
-            {Title: "To Kill a Mockingbird"},
+            {Title: "Tfmsdfsdnfmsdnfmsngmsnmgnmsfngmsfgsns"},
+            {Title: "loremfdsfndsmgnskngjsfngjsfnjgnsfjngsjfng"},
         }
         w.Header().Set("Content-Type", "application/json")
         json.NewEncoder(w).Encode(books) 
