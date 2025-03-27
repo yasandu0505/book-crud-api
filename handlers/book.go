@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"encoding/json" // Keep it, now we’re using it!
+	"encoding/json" 
 	"fmt"
 	"net/http"
 )
@@ -20,7 +20,7 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
             {Title: "To Kill a Mockingbird"},
         }
         w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(books) // Write JSON response
+        json.NewEncoder(w).Encode(books) 
     case "POST":
         var book Book
         err := json.NewDecoder(r.Body).Decode(&book)
@@ -28,7 +28,7 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
             http.Error(w, "Invalid JSON", http.StatusBadRequest)
             return
         }
-        fmt.Fprintf(w, "Book received: %+v\n", book) // Respond with received data
+        fmt.Fprintf(w, "Book received: %+v\n", book) 
     default:
         http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
     }
