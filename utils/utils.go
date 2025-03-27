@@ -1,35 +1,20 @@
-package handlers
+package utils
 
 import (
-    "encoding/json" // Keep it, now we’re using it!
-    "net/http"
-    "fmt"
+	"encoding/json"
+	"io/ioutil"
+	"os"
 )
 
-// Temporary sample structure (can be adjusted later)
-type Book struct {
-    Title string `json:"title"`
-}
+func ReadBooks(filename string) ([]Book, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-// HandleBooks handles the /books endpoint
-func HandleBooks(w http.ResponseWriter, r *http.Request) {
-    switch r.Method {
-    case "GET":
-        books := []Book{
-            {Title: "The Great Gatsby"},
-            {Title: "To Kill a Mockingbird"},
-        }
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(books) // Write JSON response
-    case "POST":
-        var book Book
-        err := json.NewDecoder(r.Body).Decode(&book)
-        if err != nil {
-            http.Error(w, "Invalid JSON", http.StatusBadRequest)
-            return
-        }
-        fmt.Fprintf(w, "Book received: %+v\n", book) // Respond with received data
-    default:
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-    }
+	var books []Book
+	bytes, _ := ioutil.ReadAll(file)
+	json.Unmarshal(bytes, &books)
+	return books, nil
 }
