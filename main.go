@@ -3,7 +3,6 @@ package main
 import (
     "log"
     "net/http"
-
     "book-crud-api/handlers"
 )
 
