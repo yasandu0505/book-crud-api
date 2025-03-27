@@ -7,7 +7,46 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
+
+// HandleBooksSearch handles the search endpoint: GET /books/search?q=<keyword>
+func HandleBooksSearch(w http.ResponseWriter, r *http.Request) {
+	cwd, _ := os.Getwd()
+	var filename = filepath.Join(cwd, "data", "book.json")
+
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "Query parameter 'q' is required", http.StatusBadRequest)
+		return
+	}
+
+	books, err := utils.ReadBooks(filename)
+	if err != nil {
+		http.Error(w, "Unable to read books", http.StatusInternalServerError)
+		return
+	}
+
+	// Perform case-insensitive search on Title and Description fields
+	var matchingBooks []models.Book
+	for _, book := range books {
+		if strings.Contains(strings.ToLower(book.Title), strings.ToLower(query)) ||
+			strings.Contains(strings.ToLower(book.Description), strings.ToLower(query)) {
+			matchingBooks = append(matchingBooks, book)
+		}
+	}
+
+	// Respond with matching books or return 404 if no matches
+	if len(matchingBooks) == 0 {
+		http.Error(w, "No books found matching the query", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(matchingBooks)
+}
+
+
 
 // HandleBooks handles CRUD operations on books
 func HandleBooks(w http.ResponseWriter, r *http.Request) {

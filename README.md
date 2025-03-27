@@ -70,7 +70,7 @@ http://localhost:8080
 
 2. **Get Book by ID**
 
-   - **GET** `/books?id={id}`
+   - **GET** `/books?id=<id>`
    - Returns a single book by its ID.
 
 3. **Create a New Book**
@@ -95,12 +95,12 @@ http://localhost:8080
 
 4. **Update a Book**
 
-   - **PUT** `/books?id={id}`
+   - **PUT** `/books?id=<id>`
    - Request Body: Same as the POST body (used to update book details).
 
 5. **Delete a Book**
 
-   - **DELETE** `/books?id={id}`
+   - **DELETE** `/books?id=<id>`
    - Deletes the book with the specified ID.
 
 ---
