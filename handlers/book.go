@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // HandleBooksSearch handles the search endpoint: GET /books/search?q=<keyword>
@@ -27,26 +28,59 @@ func HandleBooksSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Perform case-insensitive search on Title and Description fields
-	var matchingBooks []models.Book
-	for _, book := range books {
-		if strings.Contains(strings.ToLower(book.Title), strings.ToLower(query)) ||
-			strings.Contains(strings.ToLower(book.Description), strings.ToLower(query)) {
-			matchingBooks = append(matchingBooks, book)
-		}
+	// Create a channel to collect matching books from each Goroutine
+	resultsChan := make(chan []models.Book)
+	var wg sync.WaitGroup
+
+	// Divide books into smaller batches for concurrent search
+	batchSize := len(books) / 4 // Split into 4 batches (can be tuned)
+	if batchSize == 0 {
+		batchSize = 1 // Ensure batchSize is at least 1 for small datasets
 	}
 
-	// Respond with matching books or return 404 if no matches
-	if len(matchingBooks) == 0 {
+	for i := 0; i < len(books); i += batchSize {
+		end := i + batchSize
+		if end > len(books) {
+			end = len(books)
+		}
+
+		// Launch a Goroutine to search within each batch
+		wg.Add(1)
+		go func(batch []models.Book) {
+			defer wg.Done()
+
+			var batchMatches []models.Book
+			for _, book := range batch {
+				if strings.Contains(strings.ToLower(book.Title), strings.ToLower(query)) ||
+					strings.Contains(strings.ToLower(book.Description), strings.ToLower(query)) {
+					batchMatches = append(batchMatches, book)
+				}
+			}
+			resultsChan <- batchMatches // Send the matching books to the channel
+		}(books[i:end])
+	}
+
+	// Goroutine to close the channel after all searches are complete
+	go func() {
+		wg.Wait()
+		close(resultsChan)
+	}()
+
+	// Collect and merge all results from the channel
+	var finalResults []models.Book
+	for batchResults := range resultsChan {
+		finalResults = append(finalResults, batchResults...)
+	}
+
+	// Respond with the final aggregated results
+	if len(finalResults) == 0 {
 		http.Error(w, "No books found matching the query", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(matchingBooks)
+	json.NewEncoder(w).Encode(finalResults)
 }
-
-
 
 // HandleBooks handles CRUD operations on books
 func HandleBooks(w http.ResponseWriter, r *http.Request) {
