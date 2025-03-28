@@ -86,8 +86,14 @@ func HandleBooksSearch(w http.ResponseWriter, r *http.Request) {
 func HandleBooks(w http.ResponseWriter, r *http.Request) {
 
 	// getting the file path dynamically
-	cwd, _ := os.Getwd()
-	var filename = filepath.Join(cwd, "data", "book.json")
+	// cwd, _ := os.Getwd()
+	// var filename = filepath.Join(cwd, "data", "book.json")
+
+	//  file path to fetch the data
+	var filename = "../data/book.json"
+
+	// file path to test the GET req
+	// var filename = "../data/book_test.json"
 
 	switch r.Method {
 	case "GET":

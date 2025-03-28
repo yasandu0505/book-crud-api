@@ -1,0 +1,16 @@
+[
+    {
+        "BookID": "1",
+        "AuthorID": "123",
+        "PublisherID": "456",
+        "Title": "Moby Dick",
+        "PublicationDate": "1851-10-18",
+        "ISBN": "9781503280786",
+        "Pages": 635,
+        "Genre": "Adventure",
+        "Description": "A thrilling tale of a captain's obsessive quest to hunt the elusive white whale.",
+        "Price": 18.75,
+        "Quantity": 4
+    }
+  ]
+  
