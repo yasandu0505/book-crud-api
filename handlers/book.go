@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -86,19 +87,38 @@ func HandleBooksSearch(w http.ResponseWriter, r *http.Request) {
 func HandleBooks(w http.ResponseWriter, r *http.Request) {
 
 	// getting the file path dynamically
-	// cwd, _ := os.Getwd()
-	// var filename = filepath.Join(cwd, "data", "book.json")
+	cwd, _ := os.Getwd()
+	var filename = filepath.Join(cwd, "data", "book.json")
 
 	//  file path to fetch the data
-	var filename = "../data/book.json"
+	// var filename = "../data/book.json"
 
 	// file path to test the GET req
 	// var filename = "../data/book_test.json"
 
 	switch r.Method {
 	case "GET":
-		bookID := r.URL.Query().Get("id") // Check if `id` is passed in the query parameters
+		bookID := r.URL.Query().Get("id") // Optional: Check if `id` is passed in the query parameters
+		limitParam := r.URL.Query().Get("limit")
+		offsetParam := r.URL.Query().Get("offset")
 
+		// Set default pagination values
+		limit := 10 // Default limit to return 10 books per page
+		offset := 0 // Default offset to start from the beginning
+
+		// Parse query parameters, if present
+		if limitParam != "" {
+			if l, err := strconv.Atoi(limitParam); err == nil {
+				limit = l
+			}
+		}
+		if offsetParam != "" {
+			if o, err := strconv.Atoi(offsetParam); err == nil {
+				offset = o
+			}
+		}
+
+		// Read books from the JSON file
 		books, err := utils.ReadBooks(filename)
 		if err != nil {
 			http.Error(w, "Unable to read books", http.StatusInternalServerError)
@@ -106,21 +126,34 @@ func HandleBooks(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if bookID != "" {
-			// If `id` is provided, find the specific book
+			// If `id` is provided, find and return the specific book
 			for _, book := range books {
 				if book.BookID == bookID {
 					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(book) // Return the specific book
+					json.NewEncoder(w).Encode(book)
 					return
 				}
 			}
-			// If book is not found, return 404
 			http.Error(w, "Book not found", http.StatusNotFound)
-		} else {
-			// If `id` is not provided, return the entire list
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(books)
+			return
 		}
+
+		// Implement pagination: slice the books list based on limit and offset
+		startIndex := offset
+		endIndex := offset + limit
+
+		if startIndex > len(books) {
+			startIndex = len(books)
+		}
+		if endIndex > len(books) {
+			endIndex = len(books)
+		}
+
+		paginatedBooks := books[startIndex:endIndex]
+
+		// Return the paginated books as JSON
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(paginatedBooks)
 	case "POST":
 		var book models.Book
 		err := json.NewDecoder(r.Body).Decode(&book)
