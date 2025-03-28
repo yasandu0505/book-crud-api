@@ -10,19 +10,18 @@ This project is a simple CRUD (Create, Read, Update, Delete) REST API built with
 book-crud-api/
 ├── README.md          # Instructions for the program  
 ├── main.go            # Entry point of the program
-├── Dockerfile         # Docker file
+├── Dockerfile         # Docker file for containerizing the app
 ├── handlers/          # Contains handlers for the API endpoints
 │   └── book.go        # File to handle CRUD logic
 ├── models/            # Contains the Book struct
 │   └── book.go
-├── test/              # Contains the test for GET req
+├── test/              # Contains the test for GET request
 │   └── book_test.go
-├── data/              # Contains your data storage (JSON file)
-│   └── books.json     # JSON file to store book data
-│   └── book_test.json # JSON file to store book data used during testing
+├── data/              # Contains your data storage (JSON files)
+│   └── books.json     # JSON file to store book data for production
+│   └── book_test.json # JSON file used when running tests
 └── utils/             # Helper functions (like file handling)
     └── utils.go
-
 ```
 
 ---
@@ -32,6 +31,9 @@ book-crud-api/
 ### Prerequisites
 
 - GoLang installed ([Download Go](https://go.dev/dl/))
+- Docker installed (if you want to run the app in a container)
+
+---
 
 ### Setup Instructions
 
@@ -59,23 +61,22 @@ book-crud-api/
 
 ---
 
-## How to Run with Docker
+## Running Tests
 
-To containerize and run the application with Docker:
+To run tests, ensure you are using the `book_test.json` file as your test data storage.  
+Follow these instructions to test the GET request handler:
 
-1. Build the Docker image:
-
-   ```bash
-   docker build -t book-crud-api .
-   ```
-
-2. Run the Docker container:
+1. Make sure you're in the root of the project.
+2. Use Go's testing command:
 
    ```bash
-   docker run -p 8080:8080 book-crud-api
+   go test ./...
    ```
 
-3. The API will be available at `http://localhost:8080`.
+   This will run the tests located in the `test/book_test.go` file.
+
+> **Note:** The tests will read and manipulate the `data/book_test.json` file instead of `books.json`.  
+This ensures your main production data file (`books.json`) remains untouched during testing.
 
 ---
 
@@ -131,6 +132,24 @@ http://localhost:8080
 
 ---
 
+## Running the App in Docker
+
+1. Build the Docker image:
+
+   ```bash
+   docker build -t book-crud-api .
+   ```
+
+2. Run the Docker container:
+
+   ```bash
+   docker run -p 8080:8080 book-crud-api
+   ```
+
+3. The app will be accessible at `http://localhost:8080`.
+
+---
+
 ## Example cURL Commands
 
 - Get all books:
@@ -162,7 +181,7 @@ http://localhost:8080
 - Update a book:
 
   ```bash
-  curl -X PUT http://localhost:8080/books/bb329a31-6b1e-4daa-87ee-71631aa05866 \
+  curl -X PUT http://localhost:8080/books?id=bb329a31-6b1e-4daa-87ee-71631aa05866 \
   -H "Content-Type: application/json" \
   -d '{
       "title": "The Great Gatsby - Updated",
@@ -173,16 +192,15 @@ http://localhost:8080
 - Delete a book:
 
   ```bash
-  curl -X DELETE http://localhost:8080/books/bb329a31-6b1e-4daa-87ee-71631aa05866
+  curl -X DELETE http://localhost:8080/books?id=bb329a31-6b1e-4daa-87ee-71631aa05866
   ```
 
 ---
 
 ## JSON Data Storage
 
-The `data/books.json` file serves as the data persistence layer. This JSON file stores all book data and is read/written to during CRUD operations.
-
-If you want to run the tests, the test setup uses a separate JSON file, `data/book_test.json`, to prevent any interference with the main `books.json` file.
+- The `data/books.json` file serves as the main data persistence layer.
+- The `data/book_test.json` file is used specifically during testing to avoid conflicts with production data.
 
 ---
 
