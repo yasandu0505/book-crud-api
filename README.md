@@ -8,15 +8,21 @@ This project is a simple CRUD (Create, Read, Update, Delete) REST API built with
 
 ```
 book-crud-api/
-├── main.go          # Entry point of the program
-├── handlers/        # Contains handlers for the API endpoints
-│   └── book.go      # File to handle CRUD logic
-├── models/          # Contains the Book struct
+├── README.md          # Instructions for the program  
+├── main.go            # Entry point of the program
+├── Dockerfile         # Docker file
+├── handlers/          # Contains handlers for the API endpoints
+│   └── book.go        # File to handle CRUD logic
+├── models/            # Contains the Book struct
 │   └── book.go
-├── data/            # Contains your data storage (JSON file)
-│   └── books.json   # JSON file to store book data
-└── utils/           # Helper functions (like file handling)
+├── test/              # Contains the test for GET req
+│   └── book_test.go
+├── data/              # Contains your data storage (JSON file)
+│   └── books.json     # JSON file to store book data
+|   └── book_test.json # JSON file to store book data
+└── utils/             # Helper functions (like file handling)
     └── utils.go
+
 ```
 
 ---
