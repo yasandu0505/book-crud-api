@@ -1,4 +1,4 @@
-# Book CRUD API
+# ⚡️Book CRUD API⚡️
 
 This project is a simple CRUD (Create, Read, Update, Delete) REST API built with GoLang. It manages book data using a JSON text file as a data persistence layer. This project demonstrates core GoLang concepts such as HTTP handling, JSON processing, and file I/O.
 
@@ -10,16 +10,16 @@ This project is a simple CRUD (Create, Read, Update, Delete) REST API built with
 book-crud-api/
 ├── README.md          # Instructions for the program  
 ├── main.go            # Entry point of the program
-├── Dockerfile         # Docker file for containerization
+├── Dockerfile         # Docker file
 ├── handlers/          # Contains handlers for the API endpoints
 │   └── book.go        # File to handle CRUD logic
 ├── models/            # Contains the Book struct
 │   └── book.go
-├── test/              # Contains the test for GET request
+├── test/              # Contains the test for GET req
 │   └── book_test.go
 ├── data/              # Contains your data storage (JSON file)
 │   └── books.json     # JSON file to store book data
-|   └── book_test.json # JSON file to store book test data
+│   └── book_test.json # JSON file to store book data used during testing
 └── utils/             # Helper functions (like file handling)
     └── utils.go
 
@@ -32,11 +32,8 @@ book-crud-api/
 ### Prerequisites
 
 - GoLang installed ([Download Go](https://go.dev/dl/))
-- Docker installed ([Download Docker](https://www.docker.com/))
 
----
-
-## Setup Instructions (Running Locally)
+### Setup Instructions
 
 1. Clone the repository:
 
@@ -62,11 +59,9 @@ book-crud-api/
 
 ---
 
-## Running the Project with Docker
+## How to Run with Docker
 
-### Build the Docker Image
-
-To containerize the Book CRUD API, follow these steps:
+To containerize and run the application with Docker:
 
 1. Build the Docker image:
 
@@ -80,43 +75,7 @@ To containerize the Book CRUD API, follow these steps:
    docker run -p 8080:8080 book-crud-api
    ```
 
-3. The server will be running inside the container on `http://localhost:8080`.
-
----
-
-## Docker Commands
-
-Here are additional Docker commands you may find useful:
-
-- **List running containers:**
-
-  ```bash
-  docker ps
-  ```
-
-- **Stop a running container:**
-
-  ```bash
-  docker stop <container_id>
-  ```
-
-- **Remove a container:**
-
-  ```bash
-  docker rm <container_id>
-  ```
-
-- **List Docker images:**
-
-  ```bash
-  docker images
-  ```
-
-- **Remove an image:**
-
-  ```bash
-  docker rmi <image_id>
-  ```
+3. The API will be available at `http://localhost:8080`.
 
 ---
 
@@ -222,6 +181,8 @@ http://localhost:8080
 ## JSON Data Storage
 
 The `data/books.json` file serves as the data persistence layer. This JSON file stores all book data and is read/written to during CRUD operations.
+
+If you want to run the tests, the test setup uses a separate JSON file, `data/book_test.json`, to prevent any interference with the main `books.json` file.
 
 ---
 
