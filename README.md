@@ -10,16 +10,16 @@ This project is a simple CRUD (Create, Read, Update, Delete) REST API built with
 book-crud-api/
 ├── README.md          # Instructions for the program  
 ├── main.go            # Entry point of the program
-├── Dockerfile         # Docker file
+├── Dockerfile         # Docker file for containerization
 ├── handlers/          # Contains handlers for the API endpoints
 │   └── book.go        # File to handle CRUD logic
 ├── models/            # Contains the Book struct
 │   └── book.go
-├── test/              # Contains the test for GET req
+├── test/              # Contains the test for GET request
 │   └── book_test.go
 ├── data/              # Contains your data storage (JSON file)
 │   └── books.json     # JSON file to store book data
-|   └── book_test.json # JSON file to store book data
+|   └── book_test.json # JSON file to store book test data
 └── utils/             # Helper functions (like file handling)
     └── utils.go
 
@@ -32,8 +32,11 @@ book-crud-api/
 ### Prerequisites
 
 - GoLang installed ([Download Go](https://go.dev/dl/))
+- Docker installed ([Download Docker](https://www.docker.com/))
 
-### Setup Instructions
+---
+
+## Setup Instructions (Running Locally)
 
 1. Clone the repository:
 
@@ -56,6 +59,64 @@ book-crud-api/
    ```
 
 4. The server will start on `http://localhost:8080`.
+
+---
+
+## Running the Project with Docker
+
+### Build the Docker Image
+
+To containerize the Book CRUD API, follow these steps:
+
+1. Build the Docker image:
+
+   ```bash
+   docker build -t book-crud-api .
+   ```
+
+2. Run the Docker container:
+
+   ```bash
+   docker run -p 8080:8080 book-crud-api
+   ```
+
+3. The server will be running inside the container on `http://localhost:8080`.
+
+---
+
+## Docker Commands
+
+Here are additional Docker commands you may find useful:
+
+- **List running containers:**
+
+  ```bash
+  docker ps
+  ```
+
+- **Stop a running container:**
+
+  ```bash
+  docker stop <container_id>
+  ```
+
+- **Remove a container:**
+
+  ```bash
+  docker rm <container_id>
+  ```
+
+- **List Docker images:**
+
+  ```bash
+  docker images
+  ```
+
+- **Remove an image:**
+
+  ```bash
+  docker rmi <image_id>
+  ```
 
 ---
 
