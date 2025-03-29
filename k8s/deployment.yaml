@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-crud-api
+  labels:
+    app: golang-crud-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golang-crud-api
+  template:
+    metadata:
+      labels:
+        app: golang-crud-api
+    spec:
+      containers:
+      - name: golang-crud-api
+        image: <yasandu0505>/<your-image-name>:<tag>  # Use your Docker image
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ENV_VAR_NAME  # Example of passing environment variables
+          value: "some-value"

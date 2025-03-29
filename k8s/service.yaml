@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: golang-crud-api-service
+spec:
+  selector:
+    app: golang-crud-api
+  ports:
+  - protocol: TCP
+    port: 80          
+    targetPort: 8080   
+  type: ClusterIP      
